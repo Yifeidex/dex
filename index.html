@@ -1,15 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>D-Exchange</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
-</head>
-<body>
-    <div id="app">
-         </head>
+    <title>Wallet Connection and Token Creation</title>
+    <script
+      src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+      type="application/javascript"
+    ></script>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #202020;
+        color: #ffffff;
+      }
+      .container {
+        max-width: 400px;
+        width: 100%;
+        margin: auto;
+        padding: 20px;
+        background: #303030;
+        border-radius: 20px;
+      }
+      button,
+      select,
+      input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 20px;
+        border: 1px solid #b728f0;
+        background-color: #2172e5;
+        color: #fff;
+        font-size: 1rem;
+      }
+      input,
+      select {
+        background-color: #ded3d37d;
+        color: #fff;
+      }
+      button:hover {
+        background-color: #1a5bad;
+      }
+      .hidden {
+        display: none;
+      }
+      h1,
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
   <body>
     <div class="container">
       <h1>Wallet Connection</h1>
@@ -18,6 +66,7 @@
         <p>Address: <span id="walletAddress"></span></p>
         <p>Balance: <span id="walletBalance"></span> ETH</p>
       </div>
+
         </header>
         <main>
             <section id="swap">
