@@ -1,15 +1,37 @@
-<script src="https://cdn.ethers.io/lib/ethers-5.5.umd.min.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uniswap on Optimism</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D-Exchange</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
 </head>
 <body>
-    <button id="connectWallet">Connect Wallet</button>
-    <button id="swapTokens" disabled>Swap ETH for DAI</button>
-    <script src="https://cdn.ethers.io/lib/ethers-5.5.umd.min.js"></script>
+    <div id="app">
+        <header>
+            <h1>D-Exchange</h1>
+            <button id="connectWallet">Connect Wallet</button>
+        </header>
+        <main>
+            <section id="swap">
+                <input type="number" id="amountIn" placeholder="Amount In (ETH)">
+                <select id="tokenIn">
+                    <option value="ETH">ETH</option>
+                    <!-- Other tokens -->
+                </select>
+                <input type="number" id="amountOut" placeholder="Amount Out (DAI)" disabled>
+                <select id="tokenOut">
+                    <option value="DAI">DAI</option>
+                    <!-- Other tokens -->
+                </select>
+                <button id="swapButton">Swap Token</button>
+            </section>
+            <section id="transactionDetails" style="display: none;">
+                <p>Transaction Hash: <span id="txHash"></span></p>
+            </section>
+        </main>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>
