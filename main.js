@@ -1,45 +1,364 @@
-document.getElementById('connectWallet').addEventListener('click', async () => {
-    if (typeof window.ethereum !== 'undefined') {
-        // 请求用户连接 MetaMask 钱包
-        try {
-            await ethereum.request({ method: 'eth_requestAccounts' });
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            // 确保切换到 Optimism 网络
-            await provider.send("wallet_switchEthereumChain", [{ chainId: "0xa" }]); // Optimism 主网的 chainId 是 10
-            document.getElementById('swapTokens').disabled = false;
-        } catch (error) {
-            console.error("Error connecting to MetaMask", error);
+document.addEventListener('DOMContentLoaded', function() {
+    const connectWalletButton = document.getElementById('connectWallet');
+    const swapButton = document.getElementById('swapButton');
+    const amountInInput = document.getElementById('amountIn');
+    const tokenInSelect = document.getElementById('tokenIn');
+    const amountOutInput = document.getElementById('amountOut');
+    const tokenOutSelect = document.getElementById('tokenOut');
+    const txHashElement = document.getElementById('txHash');
+    const transactionDetails = document.getElementById('transactionDetails');
+
+    let signer, provider;
+
+    connectWalletButton.addEventListener('click', async () => {
+        if (window.ethereum) {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send('eth_requestAccounts', []);
+            signer = provider.getSigner();
+            alert('Wallet connected');
+        } else {
+            alert('Please install MetaMask!');
         }
-    } else {
-        alert('Please install MetaMask!');
+    });
+
+    swapButton.addEventListener('click', async () => {
+        const amountIn = ethers.utils.parseUnits(amountInInput.value, 'ether');
+        const tokenIn = tokenInSelect.value;
+        const tokenOut = tokenOutSelect.value;
+
+        const uniswapRouterAddress = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
+        const uniswapRouterABI = [ /[
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "src",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "guy",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "dst",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "Deposit",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "src",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "dst",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "src",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "Withdrawal",
+        "type": "event"
+    },
+    {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "guy",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [],
+        "name": "deposit",
+        "outputs": [],
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "dst",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "src",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "dst",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "withdraw",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
-});
+]/ ];
 
-document.getElementById('swapTokens').addEventListener('click', async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const routerAddress = 'UNISWAP_V3_ROUTER_ADDRESS_ON_OPTIMISM';
-    const routerABI = ['function exactInputSingle(tuple(uint256 amountIn, uint256 amountOutMinimum, address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 deadline, uint160 sqrtPriceLimitX96) external returns (uint256 amountOut)'];
-    const router = new ethers.Contract(routerAddress, routerABI, signer);
-
-    // 参数配置
-    const transactionParams = {
-        tokenIn: 'WETH_ADDRESS_ON_OPTIMISM',
-        tokenOut: 'DAI_ADDRESS_ON_OPTIMISM',
-        fee: 3000, // 0.3% 费率层
-        recipient: await signer.getAddress(),
-        deadline: Math.floor(Date.now() / 1000) + 60 * 10, // 10分钟后超时
-        amountIn: ethers.utils.parseEther("0.1"),
-        amountOutMinimum: 0,
-        sqrtPriceLimitX96: 0
-    };
+        async function swapETHforDAI(amountIn, amountOutMin, slippage, deadlineMinutes = 30) {
+    if (!signer) {
+        alert("Please connect your wallet first.");
+        return;
+    }
+    const amountOutMinAdjusted = ethers.utils.parseEther((amountIn * (1 - slippage)).toString());
+    const deadline = Math.floor(Date.now() / 1000) + deadlineMinutes * 60;
 
     try {
-        const tx = await router.exactInputSingle(transactionParams);
-        console.log('Transaction hash:', tx.hash);
+        const tx = await uniswapRouter.swapExactInputSingle({
+            tokenIn: ethers.constants.AddressZero, // ETH
+            tokenOut: '0xda10009cbd5d07dd0cecc66161fc93d7c9000', // DAI address on Optimism
+            amountIn: ethers.utils.parseEther(amountIn),
+            amountOutMinimum: amountOutMinAdjusted,
+            deadline: deadline,
+            sqrtPriceLimitX96: 0
+        });
+        console.log('Transaction submitted! Hash:', tx.hash);
         await tx.wait();
-        console.log('Transaction confirmed');
+        console.log('Transaction confirmed!');
     } catch (error) {
-        console.error('Error executing swap', error);
+        console.error('Swap failed:', error);
+        alert('Swap failed: ' + error.message);
     }
-});
+}
