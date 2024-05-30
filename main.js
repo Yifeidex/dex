@@ -10,16 +10,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let signer, provider;
 
-    connectWalletButton.addEventListener('click', async () => {
-        if (window.ethereum) {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send('eth_requestAccounts', []);
-            signer = provider.getSigner();
-            alert('Wallet connected');
-        } else {
-            alert('Please install MetaMask!');
+     // 钱包连接功能
+  const connectButton = document.getElementById("connectButton");
+  if (connectButton) {
+    connectButton.addEventListener("click", async () => {
+      if (typeof window.ethereum !== "undefined") {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        try {
+          await provider.send("eth_requestAccounts", []);
+          const signer = provider.getSigner();
+          const address = await signer.getAddress();
+          const balance = await provider.getBalance(address);
+          const balanceInEth = ethers.utils.formatEther(balance);
+          walletAddress.innerText = address;
+          walletBalance.innerText = balanceInEth;
+          if (walletInfo) {
+            walletInfo.classList.remove("hidden");
+          }
+        } catch (error) {
+          console.error("Error connecting to wallet:", error);
         }
+      } else {
+        console.log("MetaMask is not installed!");
+      }
     });
+  }
 
     swapButton.addEventListener('click', async () => {
         const amountIn = ethers.utils.parseUnits(amountInInput.value, 'ether');
