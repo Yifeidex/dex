@@ -1,18 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const connectWalletButton = document.getElementById("walletInfo");
+  const walletInfo = document.getElementById("walletInfo");
   const walletAddress = document.getElementById("walletAddress");
   const walletBalance = document.getElementById("walletBalance");
-    const swapButton = document.getElementById('swapButton');
+  const swapButton = document.getElementById('swapButton');
     const amountInInput = document.getElementById('amountIn');
     const tokenInSelect = document.getElementById('tokenIn');
     const amountOutInput = document.getElementById('amountOut');
     const tokenOutSelect = document.getElementById('tokenOut');
     const txHashElement = document.getElementById('txHash');
     const transactionDetails = document.getElementById('transactionDetails');
+  
+   let signer, provider;
 
-    let signer, provider;
-
-     // 钱包连接功能
+  // 钱包连接功能
   const connectButton = document.getElementById("connectButton");
   if (connectButton) {
     connectButton.addEventListener("click", async () => {
@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
 
     swapButton.addEventListener('click', async () => {
         const amountIn = ethers.utils.parseUnits(amountInInput.value, 'ether');
