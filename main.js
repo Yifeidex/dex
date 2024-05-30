@@ -1,5 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const connectWalletButton = document.getElementById('connectWallet');
+document.addEventListener("DOMContentLoaded", () => {
+  const connectWalletButton = document.getElementById("walletInfo");
+  const walletAddress = document.getElementById("walletAddress");
+  const walletBalance = document.getElementById("walletBalance");
     const swapButton = document.getElementById('swapButton');
     const amountInInput = document.getElementById('amountIn');
     const tokenInSelect = document.getElementById('tokenIn');
